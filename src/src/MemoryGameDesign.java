@@ -2,6 +2,10 @@ import javax.swing.*;
 import java.awt.*;
 
 public class MemoryGameDesign {
+    private JPanel cardPanel;
+    private int currentCardCount = 6; //default - easy level 6 cards
+    private int rows = 2;
+    private int cols = 3;
 
     public MemoryGameDesign() {
         //Creating main frame
@@ -28,7 +32,7 @@ public class MemoryGameDesign {
         //left controls
         JPanel leftControls = new JPanel();
         leftControls.setLayout(new BoxLayout(leftControls, BoxLayout.Y_AXIS));
-        leftControls.setBackground(new Color(34,49,34));//Bg color - dark green
+        leftControls.setBackground(new Color(34, 49, 34));//Bg color - dark green
         leftControls.setPreferredSize(new Dimension(150, 150));
         leftControls.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
@@ -53,37 +57,69 @@ public class MemoryGameDesign {
         rightControls.setPreferredSize(new Dimension(150, 0));
         rightControls.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        String[] levels = {"Easy", "Medium", "Hard"};
-        for (String level: levels) {
-            JButton levelButton = createUniformButton(level);
-            levelButton.addActionListener(e -> JOptionPane.showMessageDialog(frame, "Selected Level:" + level));
-            rightControls.add(levelButton);
-            rightControls.add(Box.createVerticalStrut(10));
-        }
+        JButton easyButton = createUniformButton("Easy");
+        easyButton.addActionListener(e -> {
+            currentCardCount = 6;
+            rows = 2;
+            cols = 3;
+            resetCards(currentCardCount, rows, cols);
+        });
+        rightControls.add(easyButton);
+
+        JButton mediumButton = createUniformButton("Medium");
+        mediumButton.addActionListener(e -> {
+            currentCardCount = 8;
+            rows = 2;
+            cols = 4;
+            resetCards(currentCardCount, rows, cols);
+        });
+        rightControls.add(mediumButton);
+
+        JButton hardButton = createUniformButton("Hard");
+        hardButton.addActionListener(e -> {
+            currentCardCount = 12;
+            rows = 3;
+            cols = 4;
+            resetCards(currentCardCount, rows, cols);
+        });
+        rightControls.add(hardButton);
+
         frame.add(rightControls, BorderLayout.EAST);
 
 
         //Main Panel for the cards, 2.row 2.column
-        JPanel cardPanel = new JPanel() {
+        cardPanel = new JPanel() {
             @Override
-            public Dimension getPreferredSize() {
-                Dimension size = super.getPreferredSize();
-                int side = Math.min(getParent().getWidth(), getParent().getHeight());
-                return new Dimension(side - 200, side - 200);
+            protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+
+                int panelWidth = getWidth();
+                int panelHeight = getHeight();
+
+                int cardWidth = panelWidth / cols;
+                int cardHeight = panelHeight / rows;
+                int cardSize = Math.min(cardWidth, cardHeight);
+
+                int xOffset = (panelWidth - (cardSize * cols)) / 2;
+                int yOffset = (panelHeight - (cardSize * rows)) / 2;
+
+                g.setColor(new Color(46, 77, 46));
+                for (int row = 0; row < rows; row++) {
+                    for (int col = 0; col < cols; col++) {
+                        if (row * cols + col >= currentCardCount) break;
+                        int x = xOffset + col * cardSize;
+                        int y = yOffset + row * cardSize;
+                        g.fillRect(x, y, cardSize - 10, cardSize - 10);
+                        g.setColor(Color.BLACK);
+                        g.drawRect(x, y, cardSize - 10, cardSize - 10);
+                    }
+                }
             }
         };
-        cardPanel.setLayout(new GridLayout(3, 4, 10 ,10));
         cardPanel.setBackground(new Color(34, 49, 34));
-        cardPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-
-        for (int a = 0; a < 12; a++) {
-            JButton cardButton = new JButton();
-            cardButton.setPreferredSize(new Dimension(100, 100));
-            cardButton.setBackground(new Color(46, 77, 46));
-            cardButton.setBorder(BorderFactory.createLineBorder(Color.WHITE));
-            cardPanel.add(cardButton);
-        }
         frame.add(cardPanel, BorderLayout.CENTER);
+
+        resetCards(currentCardCount, rows, cols);
 
         //PARDIIIIIS INSERT INITIALIZE CARDS HERE!!
 
@@ -106,6 +142,10 @@ public class MemoryGameDesign {
         button.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         return button;
+    }
+
+    private void resetCards(int cardCount, int rows, int cols) {
+        cardPanel.repaint();
     }
 
     public static void main(String[] args) {
